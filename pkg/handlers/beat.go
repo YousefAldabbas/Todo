@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/utils"
 	"net/http"
-	"github.com/yourusername/chi-todo/pkg/utils"
 )
 
 
 
+
 func BeatHandler(w http.ResponseWriter, r *http.Request) {
-	ResponseWithJSON(w, http.StatusOK, "server is running...")
+	utils.ResponseWithJSON(w, http.StatusOK, "server is running...")
 }
