@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/YousefAldabbas/scratch-chi/pkg/handlers"
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"

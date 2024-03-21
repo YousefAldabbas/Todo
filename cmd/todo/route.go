@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/YousefAldabbas/scratch-chi/pkg/handlers"
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/handlers"
+
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"net/http"
 )
 
 //  Routes function
