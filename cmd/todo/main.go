@@ -1,18 +1,20 @@
 package main
 
 import (
-	"github.com/YousefAldabbas/go-backend-scratch/pkg/config"
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/config"
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/utils"
+	"github.com/go-chi/chi/v5"
 
 	"database/sql"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
-
 type App struct {
 	router *chi.Mux
 	DB     *sql.DB
+
 }
 
 func (a *App) New() *App {
@@ -22,6 +24,7 @@ func (a *App) New() *App {
 	}
 
 	app.LoadRoutes()
+	utils.InitLogger()
 	return app
 }
 

@@ -1,4 +1,5 @@
 package utils
+
 import (
 	"encoding/json"
 	"log"
@@ -6,7 +7,7 @@ import (
 )
 
 func ResponseWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, err := json.Marshal(payload)
+	response, err := json.Marshal(map[string]interface{}{"data": payload})
 
 	if err != nil {
 		log.Printf("Error marshalling the response: {err} for payload: {payload}")
