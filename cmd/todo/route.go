@@ -42,11 +42,13 @@ func (a *App) LoadBeatRoutes(router chi.Router) {
 func (a *App) LoadRoutes() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 
 	r.Route("/beat", a.LoadBeatRoutes)
 	r.Route("/todos", a.LoadTodoRoutes)
 	r.Route("/users", a.LoadUserRoutes)
 	r.Route("/auth", a.LoadAuthRoutes)
+	
 	a.router = r
 }
