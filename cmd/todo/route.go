@@ -3,20 +3,27 @@ package main
 import (
 	"github.com/YousefAldabbas/go-backend-scratch/pkg/handlers"
 
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
-//  Routes function
-//  This function is used to define the routes for the books resource
+func (a *App) LoadTodoRoutes(router chi.Router) {
 
-func BooksRoutes() http.Handler {
+	h := handlers.TodoHandler{DB: a.DB}
+	router.Get("/", h.GetTodos)
+	router.Get("/{id}", h.GetTodoByID)
+}
+
+func (a *App) LoadBeatRoutes(router chi.Router) {
+	h := handlers.BeatHandler{DB: a.DB}
+	router.Get("/", h.Beat)
+}
+
+func (a *App) LoadRoutes() {
 	r := chi.NewRouter()
-	h := &handlers.BooksHandler{}
+	r.Use(middleware.Logger)
 
-	r.Get("/", h.GetBooks)
-	r.Get("/{id}", h.GetBook)
-
-	return r
+	r.Route("/beat", a.LoadBeatRoutes)
+	r.Route("/todos", a.LoadTodoRoutes)
+	a.router = r
 }
