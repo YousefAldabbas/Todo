@@ -5,38 +5,41 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	// "github.com/go-chi/cors"
+	"github.com/go-chi/jwtauth/v5"
 )
 
-func (a *App) LoadTodoRoutes(router chi.Router) {
+func (a *App) LoadTodoRoutes(r chi.Router) {
 
 	h := handlers.TodoHandler{DB: a.DB}
-	router.Get("/", h.GetTodos)
-	router.Get("/{id}", h.GetTodoByID)
+	r.Get("/", h.GetTodos)
+	r.Get("/{id}", h.GetTodoByID)
 
-	router.Post("/", h.CreateTodo)
-	router.Patch("/{id}", h.PatchTodo)
-	router.Delete("/{id}", h.DeleteTodo)
+	r.Post("/", h.CreateTodo)
+	r.Patch("/{id}", h.PatchTodo)
+	r.Delete("/{id}", h.DeleteTodo)
 }
 
-func (a *App) LoadUserRoutes(router chi.Router) {
+func (a *App) LoadUserRoutes(r chi.Router) {
 	h := &handlers.UserHandler{
 		DB: a.DB,
 	}
 
-	router.Get("/", h.GetAllUsers)
-	router.Post("/", h.CreateUser)
+	r.Get("/", h.GetAllUsers)
+	r.Post("/", h.CreateUser)
 }
 
-func (a *App) LoadAuthRoutes(router chi.Router) {
+func (a *App) LoadAuthRoutes(r chi.Router) {
 	h := handlers.AuthHandler{DB: a.DB}
-	router.Post("/login", h.Login)
+	r.Post("/login", h.Login)
 	// for testing purposes
-	router.Get("/token-validation", h.TokenValidation)
+	r.Get("/token-validation", h.TokenValidation)
 }
 
-func (a *App) LoadBeatRoutes(router chi.Router) {
+func (a *App) LoadBeatRoutes(r chi.Router) {
+
 	h := handlers.BeatHandler{DB: a.DB}
-	router.Get("/", h.Beat)
+	r.Get("/", h.Beat)
 }
 
 func (a *App) LoadRoutes() {
@@ -45,10 +48,18 @@ func (a *App) LoadRoutes() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 
-	r.Route("/beat", a.LoadBeatRoutes)
+	// private routes
+	r.Group(func(r chi.Router) {
+		tokenAuth := jwtauth.New("HS256", []byte("secret-key"), nil)
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+
+		r.Route("/beat", a.LoadBeatRoutes)
+	})
+
 	r.Route("/todos", a.LoadTodoRoutes)
 	r.Route("/users", a.LoadUserRoutes)
 	r.Route("/auth", a.LoadAuthRoutes)
-	
+
 	a.router = r
 }
