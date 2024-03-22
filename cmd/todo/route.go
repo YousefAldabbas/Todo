@@ -12,6 +12,10 @@ func (a *App) LoadTodoRoutes(router chi.Router) {
 	h := handlers.TodoHandler{DB: a.DB}
 	router.Get("/", h.GetTodos)
 	router.Get("/{id}", h.GetTodoByID)
+
+	router.Post("/", h.CreateTodo)
+	router.Patch("/{id}", h.PatchTodo)
+	router.Delete("/{id}", h.DeleteTodo)
 }
 
 func (a *App) LoadBeatRoutes(router chi.Router) {
