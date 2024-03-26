@@ -4,15 +4,18 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 
 	"github.com/YousefAldabbas/go-backend-scratch/pkg/models"
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/repository"
 	"github.com/YousefAldabbas/go-backend-scratch/pkg/utils"
 	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-	DB *sql.DB
+	Repo repository.UserRepo
 }
 
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -39,11 +42,10 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	newUser.Password = hashedPassword
 	newUser.Sub = uuid.New().String()
 
-	q := `INSERT INTO users (username, password, sub) VALUES ($1, $2, $3) RETURNING id`
-
-	if err := h.DB.QueryRow(q, newUser.Username, newUser.Password, newUser.Sub).Scan(&newUser.ID); err != nil {
-		log.Error().Err(err).Msg("Error creating user")
-		utils.ResponseWithJSON(w, http.StatusInternalServerError, "Error creating user")
+	newUser, err = h.Repo.InsertUser(newUser)
+	if err != nil {
+		log.Error().Err(err).Msg("Error inserting user")
+		utils.ResponseWithJSON(w, http.StatusInternalServerError, "Error inserting user")
 		return
 	}
 
@@ -51,12 +53,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-
-	var users []models.User
-
-	q := `SELECT * FROM users`
-
-	rows, err := h.DB.Query(q)
+	users, err := h.Repo.GetAllUsers()
 
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting users")
@@ -64,16 +61,22 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for rows.Next() {
-		var user models.User
-
-		err = rows.Scan(&user.ID, &user.Sub, &user.Username, &user.Password)
-		if err != nil {
-			log.Error().Err(err).Msg("Error scanning users")
-			utils.ResponseWithJSON(w, http.StatusInternalServerError, "Error scanning users")
-			return
-		}
-		users = append(users, user)
-	}
 	utils.ResponseWithJSON(w, http.StatusOK, users)
+}
+
+
+
+func (h *UserHandler) GetUserBySub(w http.ResponseWriter, r *http.Request) {
+	sub := chi.URLParam(r, "sub")
+
+	user, err := h.Repo.GetUserBySub(sub)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			log.Info().Msg("User not found")
+			utils.ResponseWithJSON(w, http.StatusNotFound, "User not found")
+		}
+		log.Error().Err(err).Msg("Error getting user")
+		utils.ResponseWithJSON(w, http.StatusInternalServerError, "Error getting user")
+	}
+	utils.ResponseWithJSON(w, http.StatusOK, user)
 }

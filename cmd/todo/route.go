@@ -2,16 +2,22 @@ package main
 
 import (
 	"github.com/YousefAldabbas/go-backend-scratch/pkg/handlers"
+	"github.com/YousefAldabbas/go-backend-scratch/pkg/repository"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
 	// "github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
 )
 
 func (a *App) LoadTodoRoutes(r chi.Router) {
 
-	h := handlers.TodoHandler{DB: a.DB}
+	h := handlers.TodoHandler{
+		Repo: repository.TodoRepo{
+			DB: a.DB,
+		},
+	}
 	r.Get("/", h.GetTodos)
 	r.Get("/{id}", h.GetTodoByID)
 
@@ -22,11 +28,14 @@ func (a *App) LoadTodoRoutes(r chi.Router) {
 
 func (a *App) LoadUserRoutes(r chi.Router) {
 	h := &handlers.UserHandler{
-		DB: a.DB,
+		Repo: repository.UserRepo{
+			DB: a.DB,
+		},
 	}
 
 	r.Get("/", h.GetAllUsers)
 	r.Post("/", h.CreateUser)
+	r.Get("/{sub}", h.GetUserBySub)
 }
 
 func (a *App) LoadAuthRoutes(r chi.Router) {
